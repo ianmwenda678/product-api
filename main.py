@@ -11,6 +11,7 @@ import logging
 from logging.handlers import RotatingFileHandler
 from typing import Optional
 
+# Import all models and modules
 from database.session import get_session
 from models.user import User, UserCreate, UserResponse
 from models.product import Product, ProductCreate, ProductUpdate
@@ -209,12 +210,4 @@ def health_check():
 @app.get("/metrics")
 def get_metrics(current_user: User = Depends(get_current_admin)):
     """Metrics endpoint for monitoring (admin only)."""
-    try:
-        import psutil
-        return {
-            "cpu_percent": psutil.cpu_percent(),
-            "memory_percent": psutil.virtual_memory().percent,
-            "disk_usage": psutil.disk_usage('/').percent
-        }
-    except ImportError:
-        return {"message": "psutil not installed"}
+    return {"message": "Metrics available only with psutil installed"}
