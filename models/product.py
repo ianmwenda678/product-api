@@ -1,26 +1,31 @@
-﻿from sqlmodel import SQLModel, Field, Relationship
+﻿from sqlalchemy import Column, Integer, String, Float, DateTime, ForeignKey
+from sqlalchemy.orm import relationship
 from datetime import datetime
+from database.session import Base
+from pydantic import BaseModel
 from typing import Optional
 
-class Product(SQLModel, table=True):
-    id: Optional[int] = Field(default=None, primary_key=True)
-    name: str = Field(index=True, max_length=200)
-    description: Optional[str] = Field(default=None, max_length=500)
-    price: float = Field(default=0.0)
-    stock: int = Field(default=0)
-    owner_id: int = Field(foreign_key="user.id")
-    owner: "User" = Relationship(back_populates="products")
-    created_at: datetime = Field(default_factory=datetime.utcnow)
-    updated_at: datetime = Field(default_factory=datetime.utcnow)
+class Product(Base):
+    __tablename__ = "products"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String(200), index=True)
+    description = Column(String(500), nullable=True)
+    price = Column(Float, default=0.0)
+    stock = Column(Integer, default=0)
+    owner_id = Column(Integer, ForeignKey("users.id"))
+    owner = relationship("User", back_populates="products")
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow)
 
-class ProductCreate(SQLModel):
-    name: str = Field(max_length=200)
-    description: Optional[str] = Field(default=None, max_length=500)
-    price: float = Field(default=0.0, ge=0)
-    stock: int = Field(default=0, ge=0)
+class ProductCreate(BaseModel):
+    name: str
+    description: Optional[str] = None
+    price: float = 0.0
+    stock: int = 0
 
-class ProductUpdate(SQLModel):
-    name: Optional[str] = Field(default=None, max_length=200)
-    description: Optional[str] = Field(default=None, max_length=500)
-    price: Optional[float] = Field(default=None, ge=0)
-    stock: Optional[int] = Field(default=None, ge=0)
+class ProductUpdate(BaseModel):
+    name: Optional[str] = None
+    description: Optional[str] = None
+    price: Optional[float] = None
+    stock: Optional[int] = None

@@ -1,33 +1,40 @@
-﻿from sqlmodel import SQLModel, Field, Relationship
+﻿from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey
+from sqlalchemy.orm import relationship
 from datetime import datetime
-from typing import Optional, List
+from database.session import Base
 
-class User(SQLModel, table=True):
-    id: Optional[int] = Field(default=None, primary_key=True)
-    username: str = Field(unique=True, index=True, max_length=50)
-    email: str = Field(unique=True, index=True, max_length=100)
-    hashed_password: str = Field(max_length=255)
-    full_name: str = Field(max_length=100)
-    role: str = Field(default="user", max_length=50)
-    is_active: bool = Field(default=True)
-    created_at: datetime = Field(default_factory=datetime.utcnow)
-    updated_at: datetime = Field(default_factory=datetime.utcnow)
-    last_login: Optional[datetime] = None
+class User(Base):
+    __tablename__ = "users"
     
-    products: List["Product"] = Relationship(back_populates="owner")
+    id = Column(Integer, primary_key=True, index=True)
+    username = Column(String(50), unique=True, index=True)
+    email = Column(String(100), unique=True, index=True)
+    hashed_password = Column(String(255))
+    full_name = Column(String(100))
+    role = Column(String(50), default="user")
+    is_active = Column(Boolean, default=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow)
+    last_login = Column(DateTime, nullable=True)
+    
+    products = relationship("Product", back_populates="owner")
 
-class UserCreate(SQLModel):
-    username: str = Field(max_length=50)
-    email: str = Field(max_length=100)
-    password: str = Field(max_length=100)
-    full_name: str = Field(max_length=100)
-    role: str = Field(default="user", max_length=50)
+# Pydantic models for request/response
+from pydantic import BaseModel
+from typing import Optional
 
-class UserLogin(SQLModel):
-    username: str = Field(max_length=50)
-    password: str = Field(max_length=100)
+class UserCreate(BaseModel):
+    username: str
+    email: str
+    password: str
+    full_name: str
+    role: str = "user"
 
-class UserResponse(SQLModel):
+class UserLogin(BaseModel):
+    username: str
+    password: str
+
+class UserResponse(BaseModel):
     id: int
     username: str
     email: str
